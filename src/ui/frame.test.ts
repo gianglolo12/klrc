@@ -135,3 +135,28 @@ test('lời rỗng hoàn toàn không làm nổ', () => {
   s.lyrics.lines = []
   assert.doesNotThrow(() => renderFrame(s, 5000, 80, 24))
 })
+
+/** Bỏ dòng header: nhãn player ở đó cũng chứa ký tự ●. */
+const body = (f: string) => plain(f).split('\n').slice(1).join('\n')
+
+test('quãng nhạc dạo dài thì khung hình có dấu đếm ngược', () => {
+  const s = state()
+  // Câu đầu ở 1s; đẩy nó ra 12s để có quãng dạo đủ dài.
+  s.lyrics.lines[0].startMs = 12000
+  s.lyrics.lines[0].endMs = 14000
+  const out = body(renderFrame(s, 9000, 80, 24))
+  assert.ok(out.includes('●'), `phải có dấu đếm ngược:\n${out}`)
+})
+
+test('đang hát giữa câu thì không có dấu đếm ngược', () => {
+  const out = body(renderFrame(state(), 5000, 80, 24))
+  assert.ok(!out.includes('●'), 'đang hát thì đừng chen dấu đếm vào')
+})
+
+test('gradient đổi tông theo tiến độ bài, không đứng im', () => {
+  const early = renderFrame(state(), 1000, 80, 24)
+  const late = renderFrame(state(), 14000, 80, 24)
+  const colorOf = (f: string) => (f.match(/\x1b\[1;38;5;(\d+)m/) ?? [])[1]
+  // Khi terminal không bật màu (test chạy qua pipe) thì bỏ qua phép so này.
+  if (colorOf(early)) assert.notEqual(colorOf(early), colorOf(late))
+})
