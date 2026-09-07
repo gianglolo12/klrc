@@ -2,10 +2,10 @@ import { realpathSync } from 'node:fs'
 import { emitKeypressEvents } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
-import { AfplayPlayer } from './audio/afplay-player.ts'
 import { analyze } from './audio/analyze.ts'
 import type { Spectrum } from './audio/spectrum-types.ts'
 import type { Player } from './audio/player.ts'
+import { pickPlayer as choosePlayer, type PlayerChoice } from './audio/pick-player.ts'
 import { getLyricsFor, LyricsNotFoundError } from './lyrics/index.ts'
 import { lrcPath, loadLast, saveLast, saveOffset } from './lyrics/store.ts'
 import { resolve } from './resolver/index.ts'
@@ -107,7 +107,7 @@ class TimerPlayer implements Player {
 
 async function pickPlayer(track: Track, opts: Options): Promise<Player> {
   if (opts.noAudio) return new TimerPlayer()
-  return new AfplayPlayer(track.audioPath)
+  return choosePlayer(track.audioPath, opts.player as PlayerChoice | undefined)
 }
 
 function reportLyricsFailure(err: LyricsNotFoundError, track: Track): void {
@@ -290,6 +290,11 @@ export async function main(argv: string[]): Promise<number> {
   if (values.version) {
     process.stdout.write(`${VERSION}\n`)
     return 0
+  }
+
+  if (values.player && values.player !== 'mpv' && values.player !== 'afplay') {
+    log(`Unknown player "${values.player}". Use mpv or afplay.`)
+    return 1
   }
 
   const opts: Options = {
