@@ -1,0 +1,13 @@
+{
+  "name": "klrc",
+  "owner": {
+    "name": "klrc"
+  },
+  "plugins": [
+    {
+      "name": "klrc",
+      "source": "./",
+      "description": "Karaoke lyrics in your terminal"
+    }
+  ]
+}

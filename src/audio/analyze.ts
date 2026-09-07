@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import ffmpegPath from 'ffmpeg-static'
+import { ffmpegPath } from './ffmpeg-path.ts'
 import { readText, spectrumPath, writeText } from '../lyrics/store.ts'
 import { fft } from './fft.ts'
 import type { Spectrum } from './spectrum-types.ts'
@@ -52,7 +52,8 @@ function decodePcm(audioPath: string): Promise<Float32Array> {
       return
     }
 
-    const proc = spawn(ffmpegPath, [
+    const bin: string = ffmpegPath
+    const proc = spawn(bin, [
       '-v', 'quiet',
       '-i', audioPath,
       '-f', 'f32le',
@@ -68,7 +69,7 @@ function decodePcm(audioPath: string): Promise<Float32Array> {
       stderr += c.toString()
     })
     proc.on('error', reject)
-    proc.on('close', (code) => {
+    proc.on('close', (code: number | null) => {
       if (code !== 0) {
         reject(new Error(`ffmpeg failed to decode audio (exit ${code}) ${stderr}`.trim()))
         return

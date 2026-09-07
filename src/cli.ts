@@ -6,7 +6,9 @@ import { analyze } from './audio/analyze.ts'
 import type { Spectrum } from './audio/spectrum-types.ts'
 import type { Player } from './audio/player.ts'
 import { pickPlayer as choosePlayer, type PlayerChoice } from './audio/pick-player.ts'
+import { doctor } from './doctor.ts'
 import { getLyricsFor, LyricsNotFoundError } from './lyrics/index.ts'
+import { openInNewTerminal, shellQuote } from './open-terminal.ts'
 import { lrcPath, loadLast, saveLast, saveOffset } from './lyrics/store.ts'
 import { resolve } from './resolver/index.ts'
 import type { Track } from './resolver/types.ts'
@@ -24,6 +26,7 @@ const HELP = `klrc ${VERSION} — karaoke lyrics in your terminal
 
 Usage:
   klrc <youtube-url | audio-file>     play with scrolling karaoke lyrics
+  klrc --open <youtube-url | file>    play it in a new Terminal window
   klrc path --last                    print the .lrc file of the last song
   klrc path <input>                   print the .lrc file for a song
   klrc doctor                         check this machine's setup
@@ -33,6 +36,7 @@ Options:
   --title <name>          override the track title used for the lyrics lookup
   --artist <name>         override the artist used for the lyrics lookup
   --no-audio              show lyrics on a timer without playing audio
+  --open                  open a new Terminal window instead of playing here
   -h, --help              show this help
   -v, --version           show the version
 
@@ -270,6 +274,7 @@ export async function main(argv: string[]): Promise<number> {
         title: { type: 'string' },
         artist: { type: 'string' },
         'no-audio': { type: 'boolean', default: false },
+        open: { type: 'boolean', default: false },
         last: { type: 'boolean', default: false },
         help: { type: 'boolean', short: 'h', default: false },
         version: { type: 'boolean', short: 'v', default: false },
@@ -313,9 +318,25 @@ export async function main(argv: string[]): Promise<number> {
     }
     if (command === 'path') return await pathCommand(rest, values.last === true)
     if (command === 'doctor') {
-      log('`klrc doctor` is not wired up yet.')
-      return 1
+      process.stdout.write(await doctor())
+      return 0
     }
+
+    // Claude Code goi duong nay: karaoke can TTY that, nen mo cua so rieng roi
+    // tra quyen dieu khien lai ngay.
+    if (values.open === true) {
+      const flags = [
+        opts.title ? `--title ${shellQuote(opts.title)}` : '',
+        opts.artist ? `--artist ${shellQuote(opts.artist)}` : '',
+        opts.player ? `--player ${opts.player}` : '',
+        opts.noAudio ? '--no-audio' : '',
+      ].filter(Boolean).join(' ')
+      const cmd = `npx klrc ${flags} ${shellQuote(command)}`.replace(/\s+/g, ' ')
+      await openInNewTerminal(cmd)
+      process.stdout.write('Opened karaoke in a new Terminal window.\n')
+      return 0
+    }
+
     return await play(command, opts)
   } catch (err) {
     log(err instanceof Error ? err.message : String(err))

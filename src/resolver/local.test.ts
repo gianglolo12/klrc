@@ -23,7 +23,8 @@ test('cùng một file cho cùng sourceId', async () => {
 })
 
 test('file không có tag -> lấy tên file làm title, artist rỗng', async () => {
-  const ffmpeg = (await import('ffmpeg-static')).default as unknown as string
+  const { ffmpegPath } = await import('../audio/ffmpeg-path.ts')
+  const ffmpeg = ffmpegPath as string
   const bare = '/tmp/klrc-bare-song.mp3'
   execFileSync(ffmpeg, [
     '-y',
