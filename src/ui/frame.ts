@@ -89,8 +89,15 @@ function lyricsBlock(s: ViewState, positionMs: number, width: number, height: nu
   const progress = s.durationMs > 0 ? positionMs / s.durationMs : 0
   const activeColor = gradientAt(progress) || SUNG()
 
+  // Nơi đặt dấu đếm ngược: dòng gạch chân khi đang có câu, hoặc chỗ câu đầu
+  // tiên sẽ xuất hiện khi nhạc còn dạo đầu.
+  let countdownRow = -1
+
   for (let i = start; out.length < height; i++) {
     if (i < 0 || i >= lines.length) {
+      // Nhạc còn dạo đầu (active = -1): chỗ đặt dấu đếm là dòng trống ngay trên
+      // câu đầu tiên, tức đúng vị trí câu đang hát sẽ xuất hiện.
+      if (i === active && countdownRow === -1) countdownRow = out.length
       out.push('')
       continue
     }
@@ -112,6 +119,7 @@ function lyricsBlock(s: ViewState, positionMs: number, width: number, height: nu
       // Gạch chân chạy theo phần đã hát: bắt nhịp bằng hình nhanh hơn bằng màu,
       // và không phụ thuộc bảng màu của từng terminal.
       if (out.length < height) {
+        countdownRow = out.length
         out.push(`${' '.repeat(pad)}${activeColor}${'▔'.repeat(head.length)}${RESET()}`)
       }
       continue
@@ -121,12 +129,12 @@ function lyricsBlock(s: ViewState, positionMs: number, width: number, height: nu
     out.push(centered(`${color}${clampVisible(line.text, maxText)}${RESET()}`, width))
   }
 
-  // Quãng nghỉ dài: chèn dấu đếm ngược vào dòng trống ngay dưới câu đang hát,
-  // để người xem biết còn bao lâu thay vì tưởng app treo.
+  // Quãng nghỉ dài: thay gạch chân bằng dấu đếm ngược. Lúc nghỉ, gạch chân đã
+  // phủ hết câu vừa hát nên chẳng còn nói gì; dấu đếm thì cho người xem biết
+  // còn bao lâu, thay vì ngồi trước màn hình đứng im và tưởng app treo.
   const countdown = countdownLine(lines, positionMs, width)
-  if (countdown) {
-    const anchor = out.findIndex((l, i) => i > above && stripAnsi(l).trim() === '')
-    if (anchor >= 0) out[anchor] = countdown
+  if (countdown && countdownRow >= 0 && countdownRow < out.length) {
+    out[countdownRow] = countdown
   }
 
   return out.slice(0, height)
