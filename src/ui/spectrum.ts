@@ -19,8 +19,16 @@ export function spectrumLine(spectrum: Spectrum, positionMs: number, width: numb
 
   let out = ''
   for (let col = 0; col < width; col++) {
-    const band = Math.min(Math.floor((col * frame.length) / width), frame.length - 1)
-    const level = Math.min(Math.floor((frame[band] / 256) * BLOCKS.length), BLOCKS.length - 1)
+    // Nội suy giữa hai dải liền kề. Lấy thẳng chỉ số dải sẽ cho từng khối cột
+    // giống hệt nhau — 16 dải trên 80 cột thành các bậc thang 5 cột, trông như
+    // biểu đồ cột thay vì phổ nhạc.
+    const pos = width > 1 ? (col / (width - 1)) * (frame.length - 1) : 0
+    const lo = Math.floor(pos)
+    const hi = Math.min(lo + 1, frame.length - 1)
+    const t = pos - lo
+    const value = frame[lo] * (1 - t) + frame[hi] * t
+
+    const level = Math.min(Math.floor((value / 256) * BLOCKS.length), BLOCKS.length - 1)
     out += BLOCKS[level]
   }
 

@@ -3,6 +3,8 @@ import { emitKeypressEvents } from 'node:readline'
 import { fileURLToPath } from 'node:url'
 import { parseArgs } from 'node:util'
 import { AfplayPlayer } from './audio/afplay-player.ts'
+import { analyze } from './audio/analyze.ts'
+import type { Spectrum } from './audio/spectrum-types.ts'
 import type { Player } from './audio/player.ts'
 import { getLyricsFor, LyricsNotFoundError } from './lyrics/index.ts'
 import { lrcPath, loadLast, saveLast, saveOffset } from './lyrics/store.ts'
@@ -125,16 +127,26 @@ async function play(input: string, opts: Options): Promise<number> {
   if (opts.title) track.title = opts.title
   if (opts.artist) track.artist = opts.artist
 
-  let lyrics: Lyrics
-  try {
-    lyrics = await getLyricsFor(track)
-  } catch (err) {
+  // Hai viec cho khac nhau: tra loi cho mang, phan tich pho cho CPU. Chay song
+  // song nen thoi gian khoi dong bang cai cham hon, khong phai tong hai cai.
+  const [lyricsResult, spectrumResult] = await Promise.allSettled([
+    getLyricsFor(track),
+    analyze(track.audioPath, track.sourceId),
+  ])
+
+  if (lyricsResult.status === 'rejected') {
+    const err = lyricsResult.reason
     if (err instanceof LyricsNotFoundError) {
       reportLyricsFailure(err, track)
       return 1
     }
     throw err
   }
+  const lyrics: Lyrics = lyricsResult.value
+
+  // Pho nhac chi la hieu ung: that bai thi bo hieu ung, dung bo bai hat.
+  const spectrum: Spectrum | null =
+    spectrumResult.status === 'fulfilled' ? spectrumResult.value : null
 
   saveLast(track.sourceId)
 
@@ -148,7 +160,7 @@ async function play(input: string, opts: Options): Promise<number> {
     title: track.title,
     artist: track.artist,
     lyrics,
-    spectrum: null,
+    spectrum,
     durationMs: track.durationMs,
     playerLabel: player.label,
     canSeek: player.canSeek,
