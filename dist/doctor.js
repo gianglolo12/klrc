@@ -2,7 +2,7 @@ import { execFile } from 'node:child_process';
 import { existsSync, statSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { promisify } from 'node:util';
-import { ffmpegPath } from "./audio/ffmpeg-path.js";
+import { FFMPEG_HINT, findFfmpeg } from "./audio/ffmpeg-path.js";
 import { cacheDir } from "./lyrics/store.js";
 import { hasMpv } from "./audio/pick-player.js";
 import { ytdlpVersionIfPresent } from "./resolver/ytdlp.js";
@@ -28,24 +28,26 @@ function checkPlatform() {
     };
 }
 async function checkFfmpeg() {
-    if (!ffmpegPath) {
+    const bin = findFfmpeg();
+    if (!bin) {
         return {
-            ok: false,
+            ok: true,
             label: 'ffmpeg',
-            detail: 'missing',
-            hint: 'Reinstall klrc so npm can fetch the ffmpeg binary.',
+            detail: 'not found — spectrum display off',
+            hint: `Optional. ${FFMPEG_HINT}`,
         };
     }
     try {
-        const { stdout } = await execFileAsync(ffmpegPath, ['-version'], { timeout: 20_000 });
-        return { ok: true, label: 'ffmpeg', detail: stdout.split('\n')[0].replace('ffmpeg version ', 'v') };
+        const { stdout } = await execFileAsync(bin, ['-version'], { timeout: 20_000 });
+        const version = stdout.split('\n')[0].replace('ffmpeg version ', '');
+        return { ok: true, label: 'ffmpeg', detail: `${version.split(' ')[0]} (${bin})` };
     }
     catch {
         return {
-            ok: false,
+            ok: true,
             label: 'ffmpeg',
-            detail: 'will not run',
-            hint: 'Reinstall klrc: npm i -g klrc',
+            detail: 'will not run — spectrum display off',
+            hint: `Optional. ${FFMPEG_HINT}`,
         };
     }
 }

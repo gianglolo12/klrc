@@ -58,9 +58,10 @@ export async function resolveYoutube(url, onProgress) {
         try {
             onProgress?.('Downloading audio...');
             await ytdlp([
-                '--extract-audio',
-                '--audio-format',
-                'm4a',
+                // Tai thang luong m4a co san thay vi '--extract-audio': chuyen ma can
+                // ffmpeg, ma ffmpeg la tuy chon o day.
+                '-f',
+                'bestaudio[ext=m4a]/bestaudio',
                 '--output',
                 path,
                 '--no-playlist',

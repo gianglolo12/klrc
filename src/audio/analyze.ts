@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process'
-import { ffmpegPath } from './ffmpeg-path.ts'
+import { FFMPEG_HINT, findFfmpeg } from './ffmpeg-path.ts'
 import { readText, spectrumPath, writeText } from '../lyrics/store.ts'
 import { fft } from './fft.ts'
 import type { Spectrum } from './spectrum-types.ts'
@@ -47,12 +47,12 @@ const BAND_EDGES = ((): number[] => {
 
 function decodePcm(audioPath: string): Promise<Float32Array> {
   return new Promise((resolve, reject) => {
-    if (!ffmpegPath) {
-      reject(new Error('ffmpeg binary is missing; reinstall klrc'))
+    const bin = findFfmpeg()
+    if (!bin) {
+      reject(new Error(`ffmpeg not found. ${FFMPEG_HINT}`))
       return
     }
 
-    const bin: string = ffmpegPath
     const proc = spawn(bin, [
       '-v', 'quiet',
       '-i', audioPath,

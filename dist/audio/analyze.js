@@ -1,5 +1,5 @@
 import { spawn } from 'node:child_process';
-import { ffmpegPath } from "./ffmpeg-path.js";
+import { FFMPEG_HINT, findFfmpeg } from "./ffmpeg-path.js";
 import { readText, spectrumPath, writeText } from "../lyrics/store.js";
 import { fft } from "./fft.js";
 /**
@@ -39,11 +39,11 @@ const BAND_EDGES = (() => {
 })();
 function decodePcm(audioPath) {
     return new Promise((resolve, reject) => {
-        if (!ffmpegPath) {
-            reject(new Error('ffmpeg binary is missing; reinstall klrc'));
+        const bin = findFfmpeg();
+        if (!bin) {
+            reject(new Error(`ffmpeg not found. ${FFMPEG_HINT}`));
             return;
         }
-        const bin = ffmpegPath;
         const proc = spawn(bin, [
             '-v', 'quiet',
             '-i', audioPath,
