@@ -332,7 +332,11 @@ export async function main(argv: string[]): Promise<number> {
         opts.player ? `--player ${opts.player}` : '',
         opts.noAudio ? '--no-audio' : '',
       ].filter(Boolean).join(' ')
-      const cmd = `npx klrc ${flags} ${shellQuote(command)}`.replace(/\s+/g, ' ')
+      // Goi chinh ban dang chay, khong phai `npx klrc`: npx keo ban tu registry
+      // nen cua so moi se chet khi may chua co mang, chua cai, hoac dang chay
+      // mot ban khac ban nay.
+      const self = process.argv[1] ?? 'klrc'
+      const cmd = `${shellQuote(self)} ${flags} ${shellQuote(command)}`.replace(/\s+/g, ' ')
       await openInNewTerminal(cmd)
       process.stdout.write('Opened karaoke in a new Terminal window.\n')
       return 0
