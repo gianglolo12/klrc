@@ -16,12 +16,14 @@
     "dist",
     "commands",
     ".claude-plugin",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "scripts": {
     "test": "node --test --test-concurrency=1 --test-timeout=25000 \"src/**/*.test.ts\"",
     "build": "tsc",
-    "dev": "node src/cli.ts"
+    "dev": "node src/cli.ts",
+    "prepare": "tsc"
   },
   "keywords": [
     "karaoke",
@@ -38,5 +40,14 @@
   "devDependencies": {
     "@types/node": "^24.0.0",
     "typescript": "^5.7.0"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gianglolo12/klrc.git"
+  },
+  "homepage": "https://github.com/gianglolo12/klrc#readme",
+  "bugs": {
+    "url": "https://github.com/gianglolo12/klrc/issues"
+  },
+  "author": "gianglolo12"
 }
