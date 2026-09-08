@@ -1,0 +1,42 @@
+{
+  "name": "klrc",
+  "version": "0.1.0",
+  "description": "Karaoke lyrics in your terminal",
+  "type": "module",
+  "bin": {
+    "klrc": "./dist/cli.js"
+  },
+  "engines": {
+    "node": ">=22.18"
+  },
+  "os": [
+    "darwin"
+  ],
+  "files": [
+    "dist",
+    "commands",
+    ".claude-plugin",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node --test --test-timeout=20000 \"src/**/*.test.ts\"",
+    "build": "tsc",
+    "dev": "node src/cli.ts"
+  },
+  "keywords": [
+    "karaoke",
+    "lyrics",
+    "cli",
+    "terminal",
+    "lrc"
+  ],
+  "license": "MIT",
+  "dependencies": {
+    "ffmpeg-static": "^5.3.0",
+    "music-metadata": "^11.15.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "typescript": "^5.7.0"
+  }
+}

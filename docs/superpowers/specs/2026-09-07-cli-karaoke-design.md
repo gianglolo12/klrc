@@ -29,7 +29,8 @@ lời song ngữ. Whisper chỉ là tính năng tùy chọn, không bật mặc 
 | Phát nhạc | `mpv` qua IPC nếu có, `afplay` nếu không | mpv trả vị trí phát *thật* → đồng bộ chính xác + pause/tua; afplay có sẵn trong macOS nên fallback không cần cài |
 | Nguồn lời | LRCLIB API | mở, miễn phí, không cần API key, phủ tốt nhạc phổ biến |
 | Whisper | tùy chọn, không mặc định | bắt tải model 1GB để nghe một bài là quá đắt cho bản phát hành công khai |
-| ffmpeg / yt-dlp | npm `ffmpeg-static` + `youtube-dl-exec` | npm tự tải binary đúng OS lúc install → người dùng không cài gì |
+| ffmpeg | npm `ffmpeg-static` | npm tự tải binary đúng OS lúc install → người dùng không cài gì |
+| yt-dlp | tự tải binary standalone `yt-dlp_macos`, kiểm SHA-256 | `youtube-dl-exec` chỉ tải bản zip Python cần Python >= 3.10, mà macOS xuất xưởng với 3.9 → hỏng ngay lần chạy đầu. Bản standalone không cần Python. |
 | OS | chỉ macOS | test được toàn bộ trên máy dev; Linux/Windows để sau |
 | Spectrum | tính trước toàn bài, tra theo đồng hồ | không cần DSP realtime, CPU gần bằng 0, khớp nhạc tuyệt đối |
 
@@ -174,6 +175,7 @@ bài" phổ biến nhất, và cũng là chỗ `/karaoke` của Claude cứu đ�
 
 ```
 ~/.klrc/
+  bin/yt-dlp                    binary standalone tự tải, đã kiểm SHA-256
   audio/<sourceId>.m4a          audio tải từ YouTube
   lyrics/<sourceId>.lrc         lời (Claude sửa được ở đây)
   spectrum/<sourceId>.json      spectrum đã tính

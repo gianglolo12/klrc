@@ -1,0 +1,6 @@
+{
+  "name": "klrc",
+  "version": "0.1.0",
+  "description": "Karaoke lyrics in your terminal — /karaoke <song name or link>",
+  "commands": ["./commands/karaoke.md"]
+}
