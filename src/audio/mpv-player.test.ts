@@ -1,11 +1,26 @@
 import { test } from 'node:test'
 import assert from 'node:assert/strict'
+import { execFileSync } from 'node:child_process'
 import { fileURLToPath } from 'node:url'
 import { MpvPlayer } from './mpv-player.ts'
 import { hasMpv, pickPlayer } from './pick-player.ts'
 
 const p = fileURLToPath(new URL('../resolver/fixtures/tone5s.mp3', import.meta.url))
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Dọn mpv còn sót của klrc trước khi đo.
+ *
+ * Các test dưới đây đo thời gian thật trên thiết bị audio dùng chung: một tiến
+ * trình mpv sót lại từ lần chạy trước đủ làm chúng trượt, và một suite đo thời
+ * gian mà flaky thì không nói lên điều gì.
+ */
+try {
+  execFileSync('pkill', ['-f', 'klrc-mpv-'], { stdio: 'ignore' })
+  await new Promise((r) => setTimeout(r, 300))
+} catch {
+  // pkill trả mã khác 0 khi không có tiến trình nào khớp — đó là trường hợp tốt.
+}
 
 const mpvAvailable = await hasMpv()
 const skip = mpvAvailable ? false : 'mpv chưa được cài trên máy này'

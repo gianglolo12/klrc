@@ -1,5 +1,7 @@
+import type { Spectrum } from '../audio/spectrum-types.ts'
 import type { Track } from '../resolver/types.ts'
 import { interpolateWords } from './interpolate.ts'
+import { vocalWindow } from './vocal-window.ts'
 import { fetchLyrics } from './lrclib.ts'
 import { parseLrc } from './parser.ts'
 import { loadLrc, loadOffset, saveLrc } from './store.ts'
@@ -28,10 +30,32 @@ function plainLyrics(text: string): Lyrics {
 }
 
 /**
+ * Rải timing từng chữ cho mọi dòng.
+ *
+ * Tách khỏi `getLyricsFor` vì bước này cần phổ nhạc, mà phổ được tính song song
+ * với việc tra lời — ghép ở đây, sau khi cả hai việc đã xong.
+ *
+ * Có phổ thì mỗi dòng được co về đoạn thật sự có tiếng hát trước khi rải chữ;
+ * không có phổ (ffmpeg thiếu, phân tích lỗi) thì rải đều cả dòng như trước.
+ */
+export function alignWords(lyrics: Lyrics, spectrum: Spectrum | null): void {
+  for (const line of lyrics.lines) {
+    if (!lyrics.hasTiming) {
+      line.words = []
+      continue
+    }
+    const window = spectrum ? vocalWindow(spectrum, line.startMs, line.endMs) : undefined
+    line.words = interpolateWords(line, window)
+  }
+}
+
+/**
  * Lấy lời cho một bài: cache trước, mạng sau.
  *
  * Đọc cache trước không chỉ để nhanh — đó là cách lời Claude đã sửa được dùng
  * đến thay cho bản gốc trên LRCLIB.
+ *
+ * Chưa rải timing từng chữ ở đây — gọi `alignWords` sau khi có phổ nhạc.
  */
 export async function getLyricsFor(track: Track): Promise<Lyrics> {
   const cached = loadLrc(track.sourceId)
@@ -51,9 +75,6 @@ export async function getLyricsFor(track: Track): Promise<Lyrics> {
         throw new LyricsNotFoundError(track.title, track.artist)
       })()
 
-  for (const line of lyrics.lines) {
-    line.words = interpolateWords(line)
-  }
   lyrics.offsetMs = loadOffset(track.sourceId)
   return lyrics
 }

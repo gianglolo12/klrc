@@ -8,7 +8,7 @@ import type { Spectrum } from './audio/spectrum-types.ts'
 import type { Player } from './audio/player.ts'
 import { pickPlayer as choosePlayer, type PlayerChoice } from './audio/pick-player.ts'
 import { doctor } from './doctor.ts'
-import { getLyricsFor, LyricsNotFoundError } from './lyrics/index.ts'
+import { alignWords, getLyricsFor, LyricsNotFoundError } from './lyrics/index.ts'
 import { openInNewTerminal, shellQuote } from './open-terminal.ts'
 import { lrcPath, loadLast, saveLast, saveOffset } from './lyrics/store.ts'
 import { resolve } from './resolver/index.ts'
@@ -149,9 +149,12 @@ async function play(input: string, opts: Options): Promise<number> {
   }
   const lyrics: Lyrics = lyricsResult.value
 
-  // Pho nhac chi la hieu ung: that bai thi bo hieu ung, dung bo bai hat.
+  // Pho nhac vua la hieu ung, vua la du lieu de do doan co tieng hat. That bai
+  // thi bo hieu ung va roi ve rai chu deu ca dong, dung bo bai hat.
   const spectrum: Spectrum | null =
     spectrumResult.status === 'fulfilled' ? spectrumResult.value : null
+
+  alignWords(lyrics, spectrum)
 
   saveLast(track.sourceId)
 

@@ -6,7 +6,7 @@ import { parseArgs } from 'node:util';
 import { analyze } from "./audio/analyze.js";
 import { pickPlayer as choosePlayer } from "./audio/pick-player.js";
 import { doctor } from "./doctor.js";
-import { getLyricsFor, LyricsNotFoundError } from "./lyrics/index.js";
+import { alignWords, getLyricsFor, LyricsNotFoundError } from "./lyrics/index.js";
 import { openInNewTerminal, shellQuote } from "./open-terminal.js";
 import { lrcPath, loadLast, saveLast, saveOffset } from "./lyrics/store.js";
 import { resolve } from "./resolver/index.js";
@@ -132,8 +132,10 @@ async function play(input, opts) {
         throw err;
     }
     const lyrics = lyricsResult.value;
-    // Pho nhac chi la hieu ung: that bai thi bo hieu ung, dung bo bai hat.
+    // Pho nhac vua la hieu ung, vua la du lieu de do doan co tieng hat. That bai
+    // thi bo hieu ung va roi ve rai chu deu ca dong, dung bo bai hat.
     const spectrum = spectrumResult.status === 'fulfilled' ? spectrumResult.value : null;
+    alignWords(lyrics, spectrum);
     saveLast(track.sourceId);
     if (!process.stdout.isTTY) {
         printStatic(track, lyrics);

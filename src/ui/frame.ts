@@ -4,7 +4,20 @@ import { findActiveLine, splitSung } from './lyrics-view.ts'
 import { formatOffset, formatTime, progressBar } from './progress.ts'
 import { spectrumLine } from './spectrum.ts'
 import { countdownLine } from './countdown.ts'
-import { ACCENT, FAR, NEAR, RESET, SUNG, UNSUNG, gradientAt, stripAnsi } from './theme.ts'
+import { beatAt, pitchLevel } from './beat.ts'
+import {
+  ACCENT,
+  FAR,
+  NEAR,
+  RESET,
+  SUNG,
+  UNSUNG,
+  beatRuleColor,
+  beatUnderline,
+  gradientAt,
+  pitchColor,
+  stripAnsi,
+} from './theme.ts'
 
 export type ViewState = {
   title: string
@@ -48,7 +61,8 @@ function headerLine(s: ViewState, positionMs: number, width: number): string {
   return ` ${SUNG()}${leftCut}${RESET()}${' '.repeat(gap)}${FAR()}${right}${RESET()}`
 }
 
-const ruleLine = (width: number): string => ` ${FAR()}${'─'.repeat(Math.max(width - 2, 0))}${RESET()}`
+const ruleLine = (width: number, beat: number): string =>
+  ` ${beatRuleColor(beat)}${'─'.repeat(Math.max(width - 2, 0))}${RESET()}`
 
 function keysLine(s: ViewState, width: number): string {
   const keys = ['space pause']
@@ -62,7 +76,13 @@ function keysLine(s: ViewState, width: number): string {
  * Khối lời. Câu đang hát nằm ở một phần ba trên chứ không phải chính giữa: mắt
  * đọc xuôi xuống, nên chỗ cho câu *sắp* hát quan trọng hơn câu đã qua.
  */
-function lyricsBlock(s: ViewState, positionMs: number, width: number, height: number): string[] {
+function lyricsBlock(
+  s: ViewState,
+  positionMs: number,
+  width: number,
+  height: number,
+  beat: number,
+): string[] {
   const out: string[] = []
   const maxText = Math.max(width - SIDE_PADDING * 2, 8)
   const lines = s.lyrics.lines
@@ -87,7 +107,11 @@ function lyricsBlock(s: ViewState, positionMs: number, width: number, height: nu
   const start = active - above
 
   const progress = s.durationMs > 0 ? positionMs / s.durationMs : 0
-  const activeColor = gradientAt(progress) || SUNG()
+  // Mau chu doi theo dai tan troi: doan hat cao ra sang lanh, doan tram ra am.
+  // Khong co pho thi roi ve tong theo tien do bai.
+  const activeColor = s.spectrum
+    ? pitchColor(pitchLevel(s.spectrum, positionMs), progress) || SUNG()
+    : gradientAt(progress) || SUNG()
 
   // Nơi đặt dấu đếm ngược: dòng gạch chân khi đang có câu, hoặc chỗ câu đầu
   // tiên sẽ xuất hiện khi nhạc còn dạo đầu.
@@ -120,7 +144,10 @@ function lyricsBlock(s: ViewState, positionMs: number, width: number, height: nu
       // và không phụ thuộc bảng màu của từng terminal.
       if (out.length < height) {
         countdownRow = out.length
-        out.push(`${' '.repeat(pad)}${activeColor}${'▔'.repeat(head.length)}${RESET()}`)
+        // Gach chan day len theo tieng trong. Chi doi do dam, khong doi vi tri:
+        // layout phai dung yen de mat con doc duoc loi.
+        const mark = beatUnderline(beat)
+        out.push(`${' '.repeat(pad)}${activeColor}${mark.repeat(head.length)}${RESET()}`)
       }
       continue
     }
@@ -159,10 +186,13 @@ export function renderFrame(
     (showRules ? 1 : 0) + (showSpectrum ? 1 : 0) + (showProgress ? 1 : 0) + (showKeys ? 1 : 0)
   const lyricsHeight = Math.max(h - top - bottom, 1)
 
+  // Mot phep tra mang tren pho da tinh truoc; du re de goi 30 lan moi giay.
+  const beat = s.spectrum ? beatAt(s.spectrum, positionMs) : 0
+
   const parts: string[] = [headerLine(s, positionMs, w)]
-  if (showRules) parts.push(ruleLine(w))
-  parts.push(...lyricsBlock(s, positionMs, w, lyricsHeight))
-  if (showRules) parts.push(ruleLine(w))
+  if (showRules) parts.push(ruleLine(w, beat))
+  parts.push(...lyricsBlock(s, positionMs, w, lyricsHeight, beat))
+  if (showRules) parts.push(ruleLine(w, beat))
 
   if (showSpectrum && s.spectrum) {
     parts.push(` ${spectrumLine(s.spectrum, positionMs, Math.max(w - 3, 0))}`)

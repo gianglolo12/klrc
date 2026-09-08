@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url'
 process.env.KLRC_HOME = mkdtempSync(join(tmpdir(), 'klrc-int-'))
 
 const { resolveLocal } = await import('./resolver/local.ts')
-const { getLyricsFor } = await import('./lyrics/index.ts')
+const { alignWords, getLyricsFor } = await import('./lyrics/index.ts')
 const { saveLrc } = await import('./lyrics/store.ts')
 const { AfplayPlayer } = await import('./audio/afplay-player.ts')
 const { Renderer } = await import('./ui/renderer.ts')
@@ -35,7 +35,10 @@ test('đầu-cuối: file local + lời trong cache + player thật đẩy đư�
   const lyrics = await getLyricsFor(track)
   assert.equal(lyrics.hasTiming, true)
   assert.equal(lyrics.lines.length, 4)
-  assert.ok(lyrics.lines[0].words.length > 0, 'phải có timing từng chữ sau nội suy')
+  assert.equal(lyrics.lines[0].words.length, 0, 'getLyricsFor chưa rải timing từng chữ')
+
+  alignWords(lyrics, null)
+  assert.ok(lyrics.lines[0].words.length > 0, 'phải có timing từng chữ sau alignWords')
 
   const frames: string[] = []
   const out = {
@@ -83,6 +86,7 @@ test('đầu-cuối: interpolateWords sinh timing phủ kín mọi câu của l�
   const track = await resolveLocal(audio)
   saveLrc(track.sourceId, LRC)
   const lyrics = await getLyricsFor(track)
+  alignWords(lyrics, null)
 
   for (const line of lyrics.lines) {
     const words = interpolateWords(line)

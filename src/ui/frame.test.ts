@@ -160,3 +160,46 @@ test('gradient đổi tông theo tiến độ bài, không đứng im', () => {
   // Khi terminal không bật màu (test chạy qua pipe) thì bỏ qua phép so này.
   if (colorOf(early)) assert.notEqual(colorOf(early), colorOf(late))
 })
+
+/** Phổ có xung trầm mỗi 8 frame — mô phỏng tiếng trống kick. */
+const kickSpectrum = () => ({
+  frameMs: 50,
+  bands: 16,
+  frames: Array.from({ length: 400 }, (_, i) =>
+    Uint8Array.from({ length: 16 }, (_, b) => {
+      const isBass = b >= 1 && b <= 5
+      if (!isBass) return 60
+      return i % 8 === 0 ? 250 : 30
+    }),
+  ),
+})
+
+test('gạch chân dưới câu đang hát đổi độ đậm theo tiếng trống', () => {
+  const s = { ...state(), spectrum: kickSpectrum() }
+  // Xung tram o moi frame chia het cho 8: frame 96 = 4800ms dung nhip,
+  // frame 100 = 5000ms nam giua hai nhip.
+  const onBeat = plain(renderFrame(s, 4800, 80, 24))
+  const offBeat = plain(renderFrame(s, 5000, 80, 24))
+
+  const mark = (out: string) => {
+    for (const ch of ['━', '▔', '─']) {
+      const line = out.split('\n').find((l) => l.trim().split('').every((c) => c === ch) && l.trim())
+      if (line) return ch
+    }
+    return null
+  }
+  assert.notEqual(mark(onBeat), mark(offBeat), 'gạch chân phải khác nhau giữa on-beat và off-beat')
+})
+
+test('beat không làm đổi số dòng hay chiều rộng khung hình', () => {
+  const s = { ...state(), spectrum: kickSpectrum() }
+  const a = plain(renderFrame(s, 5000, 80, 24))
+  const b = plain(renderFrame(s, 5100, 80, 24))
+  assert.equal(a.split('\n').length, b.split('\n').length, 'số dòng phải đứng yên')
+  const widest = (out: string) => Math.max(...out.split('\n').map((l) => l.length))
+  assert.ok(widest(a) <= 80 && widest(b) <= 80)
+})
+
+test('không có phổ thì vẫn vẽ bình thường, không nổ', () => {
+  assert.doesNotThrow(() => renderFrame({ ...state(), spectrum: null }, 5000, 80, 24))
+})

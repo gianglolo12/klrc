@@ -30,14 +30,46 @@ export const stripAnsi = (s: string): string => s.replace(/\x1b\[[0-9;?]*[a-zA-Z
 export const visibleWidth = (s: string): number => stripAnsi(s).length
 
 /**
- * Gradient dịch tông dần theo tiến độ bài hát: xanh lơ → tím → hồng → hổ phách.
+ * Thang màu dùng cho câu đang hát: trầm ấm → trung tính → cao lạnh.
  * Đi qua các mốc 256-color thay vì đổi hue liên tục, để không chớp nháy.
  */
-const GRADIENT_STOPS = [45, 111, 141, 176, 211, 215, 222]
+const TONE_STOPS = [215, 216, 222, 228, 194, 158, 123, 117, 111, 147]
 
-export function gradientAt(ratio: number): string {
+const toneAt = (ratio: number): string => {
   if (!colorOn()) return ''
   const r = Math.min(Math.max(ratio, 0), 1)
-  const idx = Math.min(Math.floor(r * GRADIENT_STOPS.length), GRADIENT_STOPS.length - 1)
-  return `\x1b[1;38;5;${GRADIENT_STOPS[idx]}m`
+  const idx = Math.min(Math.floor(r * TONE_STOPS.length), TONE_STOPS.length - 1)
+  return `\x1b[1;38;5;${TONE_STOPS[idx]}m`
+}
+
+/** Tông theo tiến độ bài hát. Dùng khi không đọc được cao độ. */
+export function gradientAt(ratio: number): string {
+  return toneAt(ratio)
+}
+
+/**
+ * Tông theo cao độ: dải tần trội quyết định màu chữ đang hát.
+ *
+ * Khác gradient theo tiến độ ở chỗ nó thật sự phản ứng với nhạc — đoạn hát cao
+ * vút ra màu sáng lạnh, đoạn trầm ra màu ấm. `null` (phổ phẳng, không có dải
+ * nào trội) thì rơi về tông theo tiến độ để màu không nhảy vô nghĩa.
+ */
+export function pitchColor(level: number | null, progress: number): string {
+  return toneAt(level ?? progress)
+}
+
+/**
+ * Ký tự gạch chân dưới câu đang hát, dày lên theo tiếng trống.
+ *
+ * Chỉ đổi độ đậm chứ không đổi chiều cao hay vị trí: layout phải đứng yên để
+ * mắt còn đọc được lời.
+ */
+export function beatUnderline(intensity: number): string {
+  return intensity > 0.66 ? '━' : intensity > 0.33 ? '▔' : '─'
+}
+
+/** Đường kẻ ngang sáng lên theo nhịp. */
+export function beatRuleColor(intensity: number): string {
+  if (!colorOn()) return ''
+  return intensity > 0.6 ? sgr('37') : intensity > 0.3 ? sgr('90') : sgr('2;90')
 }

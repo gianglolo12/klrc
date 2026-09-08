@@ -10,13 +10,29 @@ const line = (text: string, startMs = 0, endMs = 4000): Line => ({
   words: [],
 })
 
-test('chia thời gian theo độ dài từ, không chia đều theo số từ', () => {
+test('chia thời gian theo số âm tiết, không chia đều theo số từ', () => {
   const w = interpolateWords(line('a wonderful day', 0, 3000))
   assert.equal(w.length, 3)
   assert.equal(w[0].startMs, 0)
   assert.equal(w.at(-1)!.endMs, 3000)
   const dur = (x: (typeof w)[0]) => x.endMs - x.startMs
-  assert.ok(dur(w[1]) > dur(w[0]) * 3, 'từ dài phải chiếm nhiều thời gian hơn rõ rệt')
+  // "wonderful" 3 âm tiết so với "a" 1 âm tiết -> khoảng gấp ba.
+  assert.ok(dur(w[1]) >= dur(w[0]) * 2.5, 'từ nhiều âm tiết phải chiếm nhiều thời gian hơn')
+  assert.equal(dur(w[0]), dur(w[2]), '"a" và "day" cùng 1 âm tiết nên bằng nhau')
+})
+
+test('tiếng Việt: mọi tiếng chia đều vì cùng một âm tiết', () => {
+  const w = interpolateWords(line('em oi mua thu', 0, 4000))
+  const dur = (x: (typeof w)[0]) => x.endMs - x.startMs
+  const durations = w.map(dur)
+  const spread = Math.max(...durations) / Math.min(...durations)
+  assert.ok(spread <= 1.05, `các tiếng phải gần bằng nhau, lệch ${spread.toFixed(2)}x`)
+})
+
+test('window thu hẹp thì chữ rải trong window, không rải cả dòng', () => {
+  const w = interpolateWords(line('one two three', 0, 8000), { startMs: 1000, endMs: 3000 })
+  assert.equal(w[0].startMs, 1000)
+  assert.equal(w.at(-1)!.endMs, 3000)
 })
 
 test('các từ liền mạch: endMs của từ trước = startMs của từ sau', () => {
