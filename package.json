@@ -4,7 +4,7 @@
   "description": "Karaoke lyrics in your terminal",
   "type": "module",
   "bin": {
-    "klrc": "./src/cli.ts"
+    "klrc": "./dist/cli.js"
   },
   "engines": {
     "node": ">=22.18"
@@ -13,9 +13,7 @@
     "darwin"
   ],
   "files": [
-    "src",
-    "!src/**/*.test.ts",
-    "!src/**/fixtures",
+    "dist",
     "commands",
     ".claude-plugin",
     "README.md",
@@ -24,7 +22,9 @@
   "scripts": {
     "test": "node --test --test-concurrency=1 --test-timeout=25000 \"src/**/*.test.ts\"",
     "dev": "node src/cli.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "prepublishOnly": "tsc"
   },
   "keywords": [
     "karaoke",
