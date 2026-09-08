@@ -1,7 +1,9 @@
 {
   "name": "klrc",
+  "description": "Karaoke in your terminal: paste a song link, get lyrics highlighted word by word in time with the music.",
   "owner": {
-    "name": "klrc"
+    "name": "gianglolo12",
+    "url": "https://github.com/gianglolo12"
   },
   "plugins": [
     {

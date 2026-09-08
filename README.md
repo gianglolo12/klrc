@@ -28,13 +28,18 @@ macOS only, for now.
 ## Usage
 
 ```bash
-npx klrc "https://www.youtube.com/watch?v=..."   # YouTube link
-npx klrc ~/Music/song.mp3                        # local file
-npx klrc doctor                                  # check your setup
+npm i -g klrc
+
+klrc "https://www.youtube.com/watch?v=..."   # YouTube link
+klrc ~/Music/song.mp3                        # local file
+klrc doctor                                  # check your setup
 ```
 
-Nothing to install first: ffmpeg comes from npm, and yt-dlp is fetched
-automatically (checksum-verified) the first time you paste a YouTube link.
+`npx klrc <link>` works too, without installing.
+
+Nothing else to set up: yt-dlp is fetched automatically (checksum-verified) the
+first time you paste a YouTube link. `ffmpeg` and `mpv` are optional upgrades —
+`klrc doctor` tells you what each one buys you.
 
 ### Keys
 
@@ -79,6 +84,17 @@ edits the cached `.lrc` directly. Ask it to clean up wording, not to fix a
 song-wide timing offset — that is what `[` and `]` are for, and they are stored
 separately so edits never clobber them.
 
+## Optional extras
+
+Neither is required, and klrc never fails to start because one is missing.
+
+**`brew install ffmpeg`** turns on the spectrum display. Without it, everything
+else works — the spectrum line is simply left out. klrc uses whatever ffmpeg is
+already on your PATH rather than bundling its own, so installing it once serves
+every tool on your machine.
+
+**`brew install mpv`** — see below.
+
 ## Why install mpv?
 
 klrc works out of the box with `afplay`, which every Mac has. But afplay cannot
@@ -115,6 +131,9 @@ right.
 **A song plays but the words are for a different version** — remixes, live cuts
 and sped-up uploads have a different length, so the lyrics don't line up. Look
 for the official audio.
+
+**No spectrum line at the bottom** — that means ffmpeg isn't installed, or your
+terminal is narrower than 60 columns. `klrc doctor` says which.
 
 **`This video is blocked in your region`** — nothing klrc can do about that one.
 

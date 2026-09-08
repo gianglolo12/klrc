@@ -2,5 +2,10 @@
   "name": "klrc",
   "version": "0.1.0",
   "description": "Karaoke lyrics in your terminal — /karaoke <song name or link>",
+  "author": {
+    "name": "gianglolo12",
+    "url": "https://github.com/gianglolo12"
+  },
+  "homepage": "https://github.com/gianglolo12/klrc",
   "commands": ["./commands/karaoke.md"]
 }
