@@ -1,15 +1,31 @@
 import { execFile } from 'node:child_process';
 /**
- * Mở lệnh trong một cửa sổ terminal mới.
+ * Mở lệnh trong một TTY thật, tách khỏi tiến trình đang gọi.
  *
  * Vì sao phải làm vậy: slash command của Claude Code chỉ nhờ Claude chạy Bash,
  * và ở đó stdout bị capture chứ không phải TTY — animation ANSI sẽ vỡ thành
  * hàng nghìn dòng escape code, còn Bash tool thì có timeout nên bài 4 phút bị
- * cắt giữa. Cửa sổ mới có TTY riêng, và Claude Code rảnh ngay.
+ * cắt giữa. Một pane hay cửa sổ riêng có TTY của nó, và Claude Code rảnh ngay.
  */
 const esc = (s) => s.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
-export function buildOpenCommand(cmd, termProgram) {
-    if (termProgram === 'iTerm.app') {
+/**
+ * Chia ngang chứ không chia dọc: lời cần chiều rộng hơn chiều cao. Chia dọc để
+ * lại chừng 40 cột mỗi bên, hẹp tới mức khung hình phải bỏ cả phổ nhạc lẫn
+ * thanh tiến độ.
+ *
+ * Số dòng cố định chứ không theo phần trăm: khung hình cần từ 12 dòng mới đủ
+ * chỗ cho phổ nhạc, mà 45% của một terminal 24 dòng chỉ ra 10 dòng — vừa đúng
+ * mức bị cắt mất hiệu ứng. 14 dòng là đủ đầy đủ mà vẫn để lại phần lớn cửa sổ
+ * cho cuộc trò chuyện.
+ */
+const TMUX_PANE_LINES = '14';
+export function buildOpenCommand(cmd, env) {
+    // Đang ở trong tmux thì mở pane ngay cạnh, không nhảy sang cửa sổ khác.
+    // Pane tự đóng khi bài hết, vì tmux đóng pane lúc lệnh thoát.
+    if (env.tmux) {
+        return ['tmux', 'split-window', '-v', '-l', TMUX_PANE_LINES, cmd];
+    }
+    if (env.termProgram === 'iTerm.app') {
         return [
             'osascript',
             '-e',
@@ -28,17 +44,27 @@ export function buildOpenCommand(cmd, termProgram) {
         'tell application "Terminal" to activate',
     ];
 }
-/** Bọc chuỗi cho shell của cửa sổ mới, an toàn với dấu nháy trong tên bài. */
+/** Bọc chuỗi cho shell của pane/cửa sổ mới, an toàn với dấu nháy trong tên bài. */
 export const shellQuote = (s) => `'${s.replace(/'/g, `'\\''`)}'`;
+/** Nơi karaoke sẽ mở, để thông báo cho người dùng biết nhìn đâu. */
+export const describeTarget = (env) => env.tmux ? 'a new tmux pane' : 'a new Terminal window';
 export function openInNewTerminal(cmd) {
-    const argv = buildOpenCommand(cmd, process.env.TERM_PROGRAM);
+    const env = {
+        tmux: process.env.TMUX,
+        termProgram: process.env.TERM_PROGRAM,
+    };
+    const argv = buildOpenCommand(cmd, env);
     return new Promise((resolve, reject) => {
         execFile(argv[0], argv.slice(1), (err) => {
             if (err)
-                reject(new Error(`Could not open a new Terminal window: ${err.message}`));
+                reject(new Error(`Could not open ${describeTarget(env)}: ${err.message}`));
             else
                 resolve();
         });
     });
 }
+export const currentEnvironment = () => ({
+    tmux: process.env.TMUX,
+    termProgram: process.env.TERM_PROGRAM,
+});
 //# sourceMappingURL=open-terminal.js.map

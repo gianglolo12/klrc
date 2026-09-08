@@ -7,7 +7,7 @@ import { analyze } from "./audio/analyze.js";
 import { pickPlayer as choosePlayer } from "./audio/pick-player.js";
 import { doctor } from "./doctor.js";
 import { alignWords, getLyricsFor, LyricsNotFoundError } from "./lyrics/index.js";
-import { openInNewTerminal, shellQuote } from "./open-terminal.js";
+import { currentEnvironment, describeTarget, openInNewTerminal, shellQuote, } from "./open-terminal.js";
 import { lrcPath, loadLast, saveLast, saveOffset } from "./lyrics/store.js";
 import { resolve } from "./resolver/index.js";
 import { Renderer } from "./ui/renderer.js";
@@ -20,7 +20,7 @@ const HELP = `klrc ${VERSION} — karaoke lyrics in your terminal
 
 Usage:
   klrc <youtube-url | audio-file>     play with scrolling karaoke lyrics
-  klrc --open <youtube-url | file>    play it in a new Terminal window
+  klrc --open <youtube-url | file>    play it in a tmux pane or new window
   klrc path --last                    print the .lrc file of the last song
   klrc path <input>                   print the .lrc file for a song
   klrc doctor                         check this machine's setup
@@ -30,7 +30,7 @@ Options:
   --title <name>          override the track title used for the lyrics lookup
   --artist <name>         override the artist used for the lyrics lookup
   --no-audio              show lyrics on a timer without playing audio
-  --open                  open a new Terminal window instead of playing here
+  --open                  play in a tmux pane (or a new window) instead of here
   -h, --help              show this help
   -v, --version           show the version
 
@@ -309,7 +309,7 @@ export async function main(argv) {
             const self = process.argv[1] ?? 'klrc';
             const cmd = `${shellQuote(self)} ${flags} ${shellQuote(command)}`.replace(/\s+/g, ' ');
             await openInNewTerminal(cmd);
-            process.stdout.write('Opened karaoke in a new Terminal window.\n');
+            process.stdout.write(`Opened karaoke in ${describeTarget(currentEnvironment())}.\n`);
             return 0;
         }
         return await play(command, opts);

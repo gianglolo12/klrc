@@ -75,8 +75,20 @@ Install the plugin, then ask for a song by name instead of hunting for a link:
 /karaoke fix          ← lyrics are wrong or out of sync
 ```
 
-Claude finds the right video, then opens karaoke in a **new Terminal window** —
-the animation needs a real TTY, which a chat pane cannot provide.
+Claude finds the right video, then opens karaoke **beside the conversation**:
+a tmux pane if you are running Claude Code inside tmux, otherwise a new Terminal
+window.
+
+The animation cannot run inside the chat itself — it needs a real TTY, and a chat
+pane only appends text. Running Claude Code inside tmux is the closest thing:
+
+```bash
+brew install tmux
+tmux            # then start claude inside it
+```
+
+`/karaoke` then splits a 14-line pane below the chat and the lyrics scroll there
+while you keep working. The pane closes itself when the song ends.
 
 `/karaoke fix` is where the integration earns its keep: lrclib is
 community-contributed, so lyrics sometimes have typos or a missing line. Claude

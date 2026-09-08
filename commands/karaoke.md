@@ -57,8 +57,13 @@ npx klrc --open --title "<tên bài đúng>" --artist "<nghệ sĩ đúng>" "<li
 
 ## Hai điều cần biết
 
-- Karaoke chạy trong **cửa sổ terminal mới**, không chạy trong cuộc trò chuyện
-  này. Đó là cố ý: animation tô chữ cần TTY thật, còn output của Bash tool thì bị
-  capture nên sẽ vỡ thành hàng nghìn dòng escape code.
+- Karaoke chạy **cạnh cuộc trò chuyện**, không chạy trong đó: một pane tmux nếu
+  người dùng đang ở trong tmux, không thì một cửa sổ Terminal mới. `klrc` tự nhận
+  diện, bạn không phải làm gì.
+- Không chạy được bên trong khung chat, và đó là giới hạn cứng: animation tô chữ
+  cần TTY thật để ghi đè màn hình, còn output của Bash tool thì bị capture nên sẽ
+  vỡ thành hàng nghìn dòng escape code rồi bị timeout cắt giữa bài. Nếu người dùng
+  hỏi vì sao, nói thẳng như vậy và gợi ý chạy Claude Code trong tmux
+  (`brew install tmux`) để pane karaoke nằm ngay dưới chat.
 - Chỉ chạy `npx klrc` **không kèm** `--open` khi bạn cần *đọc* lời để sửa. Không
   có TTY, nó in lời tĩnh kèm timestamp rồi thoát — vừa đúng để đọc.
