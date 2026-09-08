@@ -4,17 +4,17 @@ Karaoke lyrics in your terminal. Give it a YouTube link or an audio file; it
 plays the song and highlights the lyrics word by word, in time with the music.
 
 ```
-  Hạ Còn Vương Nắng · DatKaa                          mpv ●   offset +0.0s
+  Song Title · Artist Name                            mpv ●   offset +0.0s
  ─────────────────────────────────────────────────────────────────────────
 
-         và rồi ngày ấy cũng qua đi thật nhanh
-       anh vẫn nhớ như in ngày đầu tiên gặp em
+         the line that was sung a moment ago
+       the line that just finished playing
 
-    ▸  hạ còn vương nắng, anh còn vương em
+    ▸  the line playing right now, filling in
        ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
 
-       mà sao giờ đây đôi ta đã cách xa nhau
-         một mùa hạ nữa lại về trên phố
+       the line that comes next
+         and the one after that
 
  ─────────────────────────────────────────────────────────────────────────
    ▁▂▃▅▇▆▄▂▁▃▅▇█▆▄▂▁▂▄▆█▇▅▃▁▂▃▅▄▂▁▂▄▅▇▆▃▁▂▄▆▇▅▃▂▁▃▄▂
@@ -65,7 +65,7 @@ Install the plugin, then ask for a song by name instead of hunting for a link:
 ```
 
 ```
-/karaoke Hạ Còn Vương Nắng
+/karaoke <tên bài hát>
 /karaoke bài của Vũ về Hà Nội mùa thu
 /karaoke fix          ← lyrics are wrong or out of sync
 ```
@@ -102,7 +102,7 @@ channel name instead of the artist). klrc cleans them up before searching, but
 not always correctly. Retry with the real names:
 
 ```bash
-npx klrc --title "Hạ Còn Vương Nắng" --artist "DatKaa" "<link>"
+npx klrc --title "<song title>" --artist "<artist>" "<link>"
 ```
 
 If lrclib genuinely doesn't have the song, you can contribute it at

@@ -55,9 +55,9 @@ test('khoảng thời gian bằng 0 hoặc âm không sinh NaN', () => {
 })
 
 test('tiếng Việt có dấu tính đúng số từ và giữ nguyên chữ', () => {
-  const w = interpolateWords(line('Hạ còn vương nắng', 0, 4000))
+  const w = interpolateWords(line('Trời xanh mây trắng', 0, 4000))
   assert.equal(w.length, 4)
-  assert.equal(w.map((x) => x.text).join(' '), 'Hạ còn vương nắng')
+  assert.equal(w.map((x) => x.text).join(' '), 'Trời xanh mây trắng')
 })
 
 test('câu dài bị chặn tốc độ tối thiểu 60ms mỗi từ', () => {

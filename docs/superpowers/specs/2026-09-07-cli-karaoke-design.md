@@ -187,18 +187,17 @@ bài" phổ biến nhất, và cũng là chỗ `/karaoke` của Claude cứu đ�
 Mockup 80 cột:
 
 ```
-  Hạ Còn Vương Nắng · DatKaa                          mpv ●   offset +0.0s
+  <một bài nhạc Việt> · <nghệ sĩ>                          mpv ●   offset +0.0s
  ─────────────────────────────────────────────────────────────────────────
 
-         và rồi ngày ấy cũng qua đi thật nhanh
-       anh vẫn nhớ như in ngày đầu tiên gặp em
+         the line that was sung a moment ago
+       the line that just finished playing
 
-    ▸  hạ còn vương nắng, anh còn vương em
+    ▸  the line playing right now, filling in
        ▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔▔
 
-       mà sao giờ đây đôi ta đã cách xa nhau
-         một mùa hạ nữa lại về trên phố
-
+       the line that comes next
+         and the one after that
  ─────────────────────────────────────────────────────────────────────────
    ▁▂▃▅▇▆▄▂▁▃▅▇█▆▄▂▁▂▄▆█▇▅▃▁▂▃▅▄▂▁▂▄▅▇▆▃▁▂▄▆▇▅▃▂▁▃▄▂
    ▰▰▰▰▰▰▰▰▰▰▰▰▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱▱   1:24 / 3:47
@@ -250,7 +249,7 @@ MCP server chịu đúng giới hạn này, nên không cần MCP.
 ### Kiến trúc tích hợp
 
 ```
-/karaoke Hạ Còn Vương Nắng
+/karaoke <tên bài hát>
    -> Claude search web, tìm link YouTube đúng bài
    -> osascript mở tab Terminal mới, chạy `klrc <link>`
    -> tab đó có TTY riêng -> animation mượt 30fps

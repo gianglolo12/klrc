@@ -52,13 +52,13 @@ test('splitSung tô dần trong lòng một từ theo tỉ lệ ký tự', () =>
 
 test('splitSung luôn bảo toàn câu gốc ở mọi mốc thời gian', () => {
   const words = [
-    { startMs: 0, endMs: 700, text: 'Hạ' },
-    { startMs: 700, endMs: 1600, text: 'còn' },
-    { startMs: 1600, endMs: 2500, text: 'nắng' },
+    { startMs: 0, endMs: 700, text: 'Trời' },
+    { startMs: 700, endMs: 1600, text: 'xanh' },
+    { startMs: 1600, endMs: 2500, text: 'trắng' },
   ]
   for (let ms = -100; ms <= 2600; ms += 37) {
     const { sung, unsung } = splitSung(words, ms)
-    assert.equal(sung + unsung, 'Hạ còn nắng', `sai ở ms=${ms}`)
+    assert.equal(sung + unsung, 'Trời xanh trắng', `sai ở ms=${ms}`)
   }
 })
 

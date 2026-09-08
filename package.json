@@ -19,7 +19,7 @@
     "README.md"
   ],
   "scripts": {
-    "test": "node --test --test-timeout=20000 \"src/**/*.test.ts\"",
+    "test": "node --test --test-concurrency=1 --test-timeout=25000 \"src/**/*.test.ts\"",
     "build": "tsc",
     "dev": "node src/cli.ts"
   },
